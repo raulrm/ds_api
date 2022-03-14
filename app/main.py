@@ -8,9 +8,9 @@ sys.path.append("..")
 
 app = FastAPI()
 
-model = joblib.load('models/spam_classifier.joblib')
+model = joblib.load('models/modelo_lg.mod')
 
-models = ['naive-bayes', 'neural', 'random-forest', 'boost']
+models = {'logistic_regression':'lg','naive-bayes':'nb', 'neural':'nn', 'random-forest':'rf', 'boost':'bo'}
 
 @app.get('/')
 def get_root():
@@ -22,3 +22,5 @@ def get_root():
 async def show_models():
 
 	return {'modelos':models}
+
+
