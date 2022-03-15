@@ -10,7 +10,7 @@ app = FastAPI()
 
 model = joblib.load('models/modelo_lg.mod')
 
-models = {'logistic_regression':'lg','naive-bayes':'nb', 'neural':'nn', 'random-forest':'rf', 'boost':'bo'}
+models = {'logistic_regression':'lg','naive-bayes':'nb', 'neural':'nn', 'random-forest':'rf', 'adaboost':'ab'}
 
 @app.get('/')
 def get_root():
