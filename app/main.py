@@ -24,3 +24,13 @@ async def show_models():
 	return {'modelos':models}
 
 
+@app.get('/metric/{model}')
+async def show_metric():
+
+	return {'modelos':models}
+
+
+@app.get('/predict/{model}/query')
+async def show_predict():
+
+	return {'modelos':models}
