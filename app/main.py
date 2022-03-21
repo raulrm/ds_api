@@ -1,7 +1,9 @@
 import joblib
-from fastapi import FastAPI, status, Form
+from fastapi import FastAPI, status, Form, Request
 import sys
+import glob
 from os.path import exists
+import pandas as pd
 
 #sys.path.append("..")
 
@@ -9,10 +11,18 @@ from os.path import exists
 app = FastAPI()
 
 # Lista MANUAL de modelo ya creados (ver TODO de ruta /models)
-models = {'lg':'logistic-regression','nb': 'naive-bayes', 'nn':'neural-network', 'rf':'random-forest', 'ab':'adaboost', 'xg': 'XGBoost'}
+# models = {'lg':'logistic-regression','nb': 'naive-bayes', 'nn':'neural-network', 'rf':'random-forest', 'ab':'adaboost', 'xg': 'XGBoost'}
+
+# con glob obtenemos los archivos de los modelos compilados
+file_models = glob.glob("models/*.mod")
+# de esa lista mostramos el substring que define el modelo
+# lamentablemente no tenemos un descripcion del modelo
+models = [name[14:16] for name in file_models]
+
+
 
 # Campos del dataset TODO ver si pydantic ayuda creando una estructura de datos
-campos = ["algun_contenido_publicado.",
+campos = ["algun_contenido_publicado",
 		"comentario_creado",
 		"curso_visto",
 		"entrega_creada.",
@@ -71,15 +81,16 @@ async def show_models():
 		dict : lista de modelos
 	"""
 	# TODO hacer que lea los modelos desde la carpeta donde se hayan los mismos
+	# (en eso estamos)
 	return {'modelos':models}
 
 
 @app.get('/metric/{model}')
 async def show_metric(model: str):
-	"""_summary_
+	""" Mostramos la matriz de confusion calculada para cada modelo
 
 	Args:
-		model (str): El modelo que nos interesa 
+		model (str): El nombre del modelo que nos interesa 
 
 	Returns:
 		json: matriz de confusion del modelo
@@ -96,8 +107,8 @@ async def show_metric(model: str):
 	return {'matriz de confusion': mtx }
 
 
-@app.post('/predict/{model}')
-async def show_predict(model: str, algun_contenido_publicado: str = ''):
+@app.get('/predict/{model}')
+async def show_predict(model: str, req: Request):
 	""" Recibe un modelo y una query 
 
 	Args:
@@ -109,6 +120,8 @@ async def show_predict(model: str, algun_contenido_publicado: str = ''):
 	"""
 	# TODO TODO
 	# cargamos std y mean
+	desvio = joblib.load("data/desvio.dat")
+	media = joblib.load('data/media.dat')
 	# normalizamos los valores
 	# creamos el filename completo
 	# vemos si existe el modelo (el archivo)
@@ -116,7 +129,9 @@ async def show_predict(model: str, algun_contenido_publicado: str = ''):
 	# hacemos el predict
 	# convertimos a lista la salida
 	# lo retornamos
-	return {'modelo elegido':model, 'algun_contenido_publicado': algun_contenido_publicado}
+	query_params = dict(req.query_params)
+	return {'modelo elegido':model,'desvio': desvio, 'media':media, 'query': query_params }
+	#return {'modelo elegido':model, 'algun_contenido_publicado': algun_contenido_publicado}
 
 
 
