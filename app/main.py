@@ -1,11 +1,22 @@
 import joblib
 from fastapi import FastAPI, status, Form, Request
+from fastapi.templating import Jinja2Templates
 import sys
 import glob
 from os.path import exists
 import pandas as pd
+import json
+
+# database 
+import sqlite3
+from sqlalchemy import create_engine
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import sessionmaker
+
+
 
 #sys.path.append("..")
+templates = Jinja2Templates(directory = '../templates')
 
 # Entry point!!!!
 app = FastAPI()
@@ -20,47 +31,75 @@ file_models = glob.glob("models/*.mod")
 models = [name[14:16] for name in file_models]
 
 
+# funcion auxiliar para obtener los campos de la BBDD
+# oooorivle, ya se...
+SQLALCHEMY_DATABASE_URL = "sqlite:///../data/ds_api.sqlite"
+
+engine = create_engine(
+    SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False}
+)
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+
+Base = automap_base()
+Base.prepare(engine, reflect=True)
+Desercion = Base.classes.desercion
+
+
+
+async def getCampos():
+	conn = sqlite3.connect('../data/ds_api.sqlite')
+	cursor = conn.cursor()
+	data=cursor.execute('''SELECT * FROM EMPLOYEE''')
+	return json.dumps(cursor.fetchone()[0])
+
+
 
 # Campos del dataset TODO ver si pydantic ayuda creando una estructura de datos
-campos = ["algun_contenido_publicado",
-		"comentario_creado",
-		"curso_visto",
-		"entrega_creada.",
-		"finalización_actividad_curso",
-		"formulario_entrega_visto.",
-		"comenzado_intento",
-		"intento_cuestionario_visualizado",
-		"intento_cuestionario_revisado",
-		"ntento_enviado",
-		"mensaje_creado",
-		"modulo_curso_visto",
-		"perfil_usuario_visto",
-		"resumen_intento_cuestionario_visualizado",
-		"enviado_entrega",
-		"suscrito_discusión",
-		"visualizado_estado_entrega",
-		"tema_creado",
-		"tema_visto",
-		"fichero_subido",
-		"usuario_calificado",
-		"lista_usuarios_vista",
-		"mensaje_borrado",
-		"borrado_suscripcion_discusion",
-		"tema_borrado",
-		"informe_notas_usuario_visto",
-		"mensaje_actualizado",
-		"instancia_módulo_curso_visualizada",
-		"informe_resumen_notas_visto",
-		"lista_insignias_vista",
-		"envío_actualizado",
-		"usuario_matriculado_curso",
-		"elemento_calificacion_actualizado",
-		"informe_usuario_visualizado",
-		"informe_usuario_curso_visto",
-		"suscripcion_activada",
-		"curso_actualizado",
-		"elemento_calificacio_creado",
-		"completo"]
+# campos = ["algun_contenido_publicado",
+# 		"comentario_creado",
+# 		"curso_visto",
+# 		"entrega_creada.",
+# 		"finalización_actividad_curso",
+# 		"formulario_entrega_visto.",
+# 		"comenzado_intento",
+# 		"intento_cuestionario_visualizado",
+# 		"intento_cuestionario_revisado",
+# 		"ntento_enviado",
+# 		"mensaje_creado",
+# 		"modulo_curso_visto",
+# 		"perfil_usuario_visto",
+# 		"resumen_intento_cuestionario_visualizado",
+# 		"enviado_entrega",
+# 		"suscrito_discusión",
+# 		"visualizado_estado_entrega",
+# 		"tema_creado",
+# 		"tema_visto",
+# 		"fichero_subido",
+# 		"usuario_calificado",
+# 		"lista_usuarios_vista",
+# 		"mensaje_borrado",
+# 		"borrado_suscripcion_discusion",
+# 		"tema_borrado",
+# 		"informe_notas_usuario_visto",
+# 		"mensaje_actualizado",
+# 		"instancia_módulo_curso_visualizada",
+# 		"informe_resumen_notas_visto",
+# 		"lista_insignias_vista",
+# 		"envío_actualizado",
+# 		"usuario_matriculado_curso",
+# 		"elemento_calificacion_actualizado",
+# 		"informe_usuario_visualizado",
+# 		"informe_usuario_curso_visto",
+# 		"suscripcion_activada",
+# 		"curso_actualizado",
+# 		"elemento_calificacio_creado",
+# 		"completo"]
+
+campos = getCampos()
+
+@app.get('/campos')
+def getCamposApi():
+	return getCampos()
 
 @app.get('/')
 def get_root():
