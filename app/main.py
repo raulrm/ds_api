@@ -3,7 +3,7 @@ from fastapi import FastAPI, status, Form, Request
 from fastapi.templating import Jinja2Templates
 import sys
 import glob
-from os.path import exists
+import os.path 
 import pandas as pd
 import json
 
@@ -14,6 +14,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
 
+db_name = os.path.dirname(os.path.abspath(__file__)) + '/../data/ds_api.sqlite'
 
 #sys.path.append("..")
 templates = Jinja2Templates(directory = '../templates')
@@ -33,24 +34,25 @@ models = [name[14:16] for name in file_models]
 
 # funcion auxiliar para obtener los campos de la BBDD
 # oooorivle, ya se...
-SQLALCHEMY_DATABASE_URL = "sqlite:///../data/ds_api.sqlite"
+#SQLALCHEMY_DATABASE_URL = "sqlite:///../data/ds_api.sqlite"
 
-engine = create_engine(
-    SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False}
-)
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+#engine = create_engine(
+#    SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False}
+#)
+#SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
-Base = automap_base()
-Base.prepare(engine, reflect=True)
-Desercion = Base.classes.desercion
+#Base = automap_base()
+#Base.prepare(engine, reflect=True)
+#Desercion = Base.classes.desercion
 
+print(db_name)
 
-
-async def getCampos():
-	conn = sqlite3.connect('../data/ds_api.sqlite')
+def getCampos():
+	conn = sqlite3.connect(db_name)
 	cursor = conn.cursor()
-	data=cursor.execute('''SELECT * FROM EMPLOYEE''')
-	return json.dumps(cursor.fetchone()[0])
+	#data=cursor.execute('''SELECT * FROM desercion''')
+	data = cursor.execute("SELECT name FROM PRAGMA_table_info('desercion'); ")
+	return list(data)
 
 
 
@@ -95,11 +97,12 @@ async def getCampos():
 # 		"elemento_calificacio_creado",
 # 		"completo"]
 
-campos = getCampos()
+#campos = getCampos()
 
 @app.get('/campos')
 def getCamposApi():
-	return getCampos()
+	salida1 = getCampos()
+	return {'campos': salida1}
 
 @app.get('/')
 def get_root():
