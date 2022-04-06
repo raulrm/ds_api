@@ -17,7 +17,7 @@ from sqlalchemy.orm import sessionmaker
 db_name = os.path.dirname(os.path.abspath(__file__)) + '/../data/ds_api.sqlite'
 
 #sys.path.append("..")
-templates = Jinja2Templates(directory = '../templates')
+templates = Jinja2Templates(directory = '/templates/')
 
 # Entry point!!!!
 app = FastAPI()
@@ -47,7 +47,7 @@ models = [name[14:16] for name in file_models]
 
 print(db_name)
 
-def getCampos():
+def getCampos() -> dict:
 	conn = sqlite3.connect(db_name)
 	cursor = conn.cursor()
 	#data=cursor.execute('''SELECT * FROM desercion''')
@@ -100,9 +100,9 @@ def getCampos():
 #campos = getCampos()
 
 @app.get('/campos')
-def getCamposApi():
+def getCamposApi(request: Request):
 	salida1 = getCampos()
-	return {'campos': salida1}
+	return templates.TemplateResponse("formulario.html", {"request": request, "campos": salida1},)
 
 @app.get('/')
 def get_root():

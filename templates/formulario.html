@@ -18,9 +18,14 @@
             </select>    
         </div>
         <div>
-            <label for="algun_contenido_publicado">Algun contenido publicado</label>
+            {% for campo in campos %}   
+
+            <label for="{{ campo }}">{{ campo }}</label>
             <input type="text">
-            <label for="comentario_creado">Comentario Creado</label>
+
+
+            
+            <!-- <label for="comentario_creado">Comentario Creado</label>
             <input type="text">
             <label for="curso_visto">Curso visto</label>
             <input type="text">
@@ -47,7 +52,7 @@
             <label for="algun_contenido_publicado">Algun contenido publicado</label>
             <input type="text">
             <label for="algun_contenido_publicado">Algun contenido publicado</label>
-            <input type="text">
+            <input type="text"> -->
         </div>
         "",
 		"",
