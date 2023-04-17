@@ -1,3 +1,4 @@
+import uvicorn
 import joblib
 from fastapi import FastAPI, status, Form, Request
 from fastapi.templating import Jinja2Templates
@@ -6,6 +7,9 @@ import glob
 import os.path 
 import pandas as pd
 import json
+from pathlib import Path
+
+
 
 # database 
 import sqlite3
@@ -17,7 +21,12 @@ from sqlalchemy.orm import sessionmaker
 db_name = os.path.dirname(os.path.abspath(__file__)) + '/../data/ds_api.sqlite'
 
 #sys.path.append("..")
-templates = Jinja2Templates(directory = '/templates/')
+#templates = Jinja2Templates(directory = '/templates/')
+BASE_DIR = Path(__file__).resolve().parent
+
+templates = Jinja2Templates(directory=str(Path(BASE_DIR, 'templates')))
+
+
 
 # Entry point!!!!
 app = FastAPI()
@@ -51,7 +60,7 @@ def getCampos() -> dict:
 	conn = sqlite3.connect(db_name)
 	cursor = conn.cursor()
 	#data=cursor.execute('''SELECT * FROM desercion''')
-	data = cursor.execute("SELECT name FROM PRAGMA_table_info('desercion'); ")
+	data = cursor.execute("SELECT replace(name,'(','') , type FROM PRAGMA_table_info('desercion'); ")
 	return list(data)
 
 
@@ -102,6 +111,8 @@ def getCampos() -> dict:
 @app.get('/campos')
 def getCamposApi(request: Request):
 	salida1 = getCampos()
+	#return {'mensaje': BASE_DIR}
+
 	return templates.TemplateResponse("formulario.html", {"request": request, "campos": salida1},)
 
 @app.get('/')
@@ -191,3 +202,11 @@ async def set_instancia(algun_contenido_publicado: str = ''):
 	# insertamos el registro
 	# reprocesamos los modelos (apa! esto es lo dificil!!!)
 	return {'algun_contenido_publicado': algun_contenido_publicado}
+
+
+
+
+
+# Ejecutamos el codigo (esto es para debuggear)
+if __name__ == "__main__":
+	uvicorn.run(app, host="0.0.0.0", port=8000)
